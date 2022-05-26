@@ -2809,17 +2809,17 @@
             "returnType": "void",
             "templateParams": [
                 {
-                    "name": "DTRes",
+                    "name": "DT",
                     "isDataType": true
                 }
             ],
             "runtimeParams": [
                 {
-                    "type": "DTRes *&",
+                    "type": "DT *&",
                     "name": "res"
                 },
                 {
-                    "type": "const DTRes *",
+                    "type": "const DT *",
                     "name": "arg"
                 },
                 {
@@ -2839,7 +2839,7 @@
                     "name": "numAggCols"
                 },
                 {
-                    "type": "GroupEnum *",
+                    "type": "mlir::daphne::GroupEnum *",
                     "name": "aggFuncs",
                     "isVariadic": true
                 },
