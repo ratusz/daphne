@@ -137,6 +137,11 @@ if(USE_ARROW)
     message(STATUS "Arrow/Parquet enabled")
 endif()
 
+option(USE_FPGAOPENCL "Whether to activate compilation of FPGA OpenCL features" OFF)
+if(USE_FPGAOPENCL)
+	add_definitions(-DUSE_FPGAOPENCL)
+endif()
+
 # *****************************************************************************
 # Project-specific include directories
 # *****************************************************************************
