@@ -1062,7 +1062,7 @@
         },
         "api": [
             {
-                "name":  ["CUDA", "CPP"],
+                "name":  ["CUDA", "CPP", "FPGAOPENCL"],
                 "instantiations": [
                     [["DenseMatrix", "float"], ["DenseMatrix", "float"], ["DenseMatrix", "float"]],
                     [["DenseMatrix", "double"], ["DenseMatrix", "double"], ["DenseMatrix", "double"]]

@@ -381,6 +381,7 @@ par_acceptAll="0"
 unknown_options=""
 BUILD_CUDA="-DUSE_CUDA=OFF"
 BUILD_ARROW="-DUSE_ARROW=OFF"
+BUILD_FPGAOPENCL="-DUSE_FPGAOPENCL=ON"
 BUILD_DEBUG="-DCMAKE_BUILD_TYPE=Release"
 
 while [[ $# -gt 0 ]]; do
@@ -413,6 +414,10 @@ while [[ $# -gt 0 ]]; do
         --arrow)
             echo using ARROW
             BUILD_ARROW="-DUSE_ARROW=ON"
+            ;;
+        --fpgaopencl)
+            echo using FPGAOPENCL
+            export BUILD_FPGAOPENCL="-DUSE_FPGAOPENCL=ON"
             ;;
         --debug)
             echo building DEBUG version
@@ -708,7 +713,7 @@ fi
 
 daphne_msg "Build Daphne"
 
-cmake -S "$projectRoot" -B "$daphneBuildDir" -G Ninja $BUILD_CUDA $BUILD_ARROW $BUILD_DEBUG \
+cmake -S "$projectRoot" -B "$daphneBuildDir" -G Ninja $BUILD_CUDA $BUILD_ARROW $BUILD_FPGAOPENCL  $BUILD_DEBUG \
   -DCMAKE_PREFIX_PATH="$installPrefix" -DANTLR_VERSION="$antlrVersion"  \
   -DMLIR_DIR="$buildPrefix/$llvmName/lib/cmake/mlir/" \
   -DLLVM_DIR="$buildPrefix/$llvmName/lib/cmake/llvm/"
