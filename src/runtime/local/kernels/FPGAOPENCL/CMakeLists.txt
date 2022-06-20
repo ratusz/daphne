@@ -16,31 +16,35 @@
 # directory) as the basis for the pre-compiled kernels library.
 
 #       * more properly set up paths (ugly relative include path below)
-cmake_minimum_required(VERSION 3.21)
+#cmake_minimum_required(VERSION 3.21)
 
-project(FPGAOPENCLkernels)
+#project(FPGAOPENCLkernels)
 
 include_directories(/opt/intel/intelFPGA_pro/21.4/hld/examples_aoc/common/inc/ /opt/intel/intelFPGA_pro/21.4/hld/host/include/)
 
+set(PREFIX ${PROJECT_SOURCE_DIR}/src/runtime/local/kernels/FPGAOPENCL)
+message(STATUS "cmake fpga test!")
 add_custom_command(
-	OUTPUT ${PROJECT_BINARY_DIR}/FPGAOPENCLkernels.cpp
+    OUTPUT ${PROJECT_BINARY_DIR}/FPGAOPENCLkernels.cpp
     COMMAND python3 ARGS genKernelInst.py kernels.json
     ${PROJECT_BINARY_DIR}/FPGAOPENCLkernels.cpp FPGAOPENCL
-    MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/../kernels.json
-    DEPENDS ${PROJECT_SOURCE_DIR}/../genKernelInst.py
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/..
+    MAIN_DEPENDENCY ${PREFIX}/../kernels.json
+    DEPENDS ${PREFIX}/../genKernelInst.py
+    WORKING_DIRECTORY ${PREFIX}/..
 )
 
-set(PREFIX ${PROJECT_SOURCE_DIR}/)
+#set(PREFIX ${PROJECT_SOURCE_DIR}/src/runtime/local/kernels/FPGAOPENCL)
 set(FPGAOPENCLKernels_SRC
-        ${PREFIX}/MatMul.cpp
-	${PREFIX}/gemm_interface.cpp
-	${PREFIX}/gemm_interface.h
+        ${PREFIX}/MatMul.h
+	${PREFIX}/interface.cpp
+	${PREFIX}/interface.h
 	${PROJECT_BINARY_DIR}/FPGAOPENCLkernels.cpp
 )
 
 add_library(FPGAOPENCLKernels SHARED ${FPGAOPENCLKernels_SRC})
+set_target_properties(FPGAOPENCLKernels PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/src/runtime/local/kernels)
 
-target_include_directories(FPGAOPENCLKernels PUBLIC ${PROJECT_SOURCE_DIR}/../../../../)
+target_include_directories(FPGAOPENCLKernels PUBLIC ${PROJECT_SOURCE_DIR}/src/)
 
+target_link_libraries(FPGAOPENCLKernels PUBLIC AllKernels LLVMSupport /opt/intel/intelFPGA_pro/21.4/hld/linux64/lib/libOpenCL.so)
 
