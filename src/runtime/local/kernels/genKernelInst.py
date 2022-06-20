@@ -204,7 +204,7 @@ if __name__ == "__main__":
         print()
         printHelp()
         sys.exit(1)
-
+    print("python test!")
     # Parse arguments.
     inFilePath = sys.argv[1]
     outFilePath = sys.argv[2]

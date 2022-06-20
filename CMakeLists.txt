@@ -147,8 +147,11 @@ endif()
 
 option(USE_FPGAOPENCL "Whether to activate compilation of FPGA OpenCL features" OFF)
 if(USE_FPGAOPENCL)
+	message(STATUS "cmake: using FPGA")
 	add_definitions(-DUSE_FPGAOPENCL)
 endif()
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # *****************************************************************************
 # Project-specific include directories
@@ -175,6 +178,10 @@ add_subdirectory(src/runtime/distributed/worker)
 add_subdirectory(src/runtime/local/datastructures)
 add_subdirectory(src/runtime/local/io)
 add_subdirectory(src/runtime/local/kernels)
+if(USE_FPGAOPENCL)
+    add_subdirectory(src/runtime/local/kernels/FPGAOPENCL)
+endif() 
 add_subdirectory(src/util)
+
 
 add_subdirectory(test)
