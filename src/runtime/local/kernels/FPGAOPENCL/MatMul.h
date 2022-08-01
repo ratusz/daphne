@@ -26,7 +26,7 @@
 
 #include <cassert>
 #include <cstddef>
-#include "interface.h"
+#include "gemm_interface.h"
 
 namespace FPGAOPENCL {
 // ****************************************************************************
@@ -60,11 +60,11 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
     static void apply(DenseMatrix<float> *& res, const DenseMatrix<float> * lhs, const DenseMatrix<float> * rhs, DCTX(ctx)) {
         const size_t nr1 = lhs->getNumRows();
         const size_t nc1 = lhs->getNumCols();
-        const size_t nr2 = rhs->getNumRows();
+        //const size_t nr2 = rhs->getNumRows();
         const size_t nc2 = rhs->getNumCols();
         assert((nc1 == nr2) && "#cols of lhs and #rows of rhs must be the same");        
 
-	printf("\ntest MatMul f32 \n");
+//	printf("\ntest MatMul f32 \n");
 // Parameters of the systolic array in the bitstream. Do not change.
 
 #define II   32
@@ -124,11 +124,11 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
     memcpy(A,lhs->getValues(),num_elem_A * sizeof(float));//sizeof(lhs));
     memcpy(B,rhs->getValues(),num_elem_B * sizeof(float));//sizeof(rhs));
      
-    printf("\nA values %f\n",*A);
-    printf("\nB values %f\n",*B);
+    //printf("\nA values %f\n",*A);
+    //printf("\nB values %f\n",*B);
     sgemm(A, B, C, OUTERMOST_I, OUTERMOST_J, OUTERMOST_K);
  
-    printf("\nC values %f\n",*C);
+  //  printf("\nC values %f\n",*C);
  
     if(res == nullptr)
        res = DataObjectFactory::create<DenseMatrix<float>>(nr1, nc2, false);
@@ -137,7 +137,7 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
     //printf("\nres: %p\n", res);
     //printf("\nres->getValues(): %p\n", res->getValues());
     memcpy(res->getValues(),C,num_elem_C * sizeof(float));//sizeof(C)
-    printf("\nres memcpy2\n");
+   // printf("\nres memcpy2\n");
 
    }
 };
@@ -147,7 +147,7 @@ struct MatMul<DenseMatrix<double>, DenseMatrix<double>, DenseMatrix<double>> {
     static void apply(DenseMatrix<double> *& res, const DenseMatrix<double> * lhs, const DenseMatrix<double> * rhs, DCTX(ctx)) {
         const size_t nr1 = lhs->getNumRows();
         const size_t nc1 = lhs->getNumCols();
-        const size_t nr2 = rhs->getNumRows();
+        //const size_t nr2 = rhs->getNumRows();
         const size_t nc2 = rhs->getNumCols();
         assert((nc1 == nr2) && "#cols of lhs and #rows of rhs must be the same");
  

@@ -129,7 +129,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
             serialized_B[addr++] = B[j+k*TOTAL_J];
         }
 
-    DPRINTF("\n===== Host-CPU setting up the OpenCL platform and device ======\n\n");
+    //DPRINTF("\n===== Host-CPU setting up the OpenCL platform and device ======\n\n");
 
     // Use this to check the output of each API call
     cl_int status;
@@ -143,18 +143,18 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     // Use clGetPlatformIDs() to retrieve the
     // number of platforms
     status = clGetPlatformIDs(0, NULL, &numPlatforms);
-    DPRINTF("Number of platforms = %d\n", numPlatforms);
+    //DPRINTF("Number of platforms = %d\n", numPlatforms);
 
     // Allocate enough space for each platform
     // platforms = (cl_platform_id*) acl_aligned_malloc (numplatforms * sizeof(cl_platform_id));
     platforms = (cl_platform_id *)malloc(numPlatforms * sizeof(cl_platform_id));
 
-    DPRINTF("Allocated space for Platform\n");
+    //DPRINTF("Allocated space for Platform\n");
 
     // Fill in platforms with clGetPlatformIDs()
     status = clGetPlatformIDs(numPlatforms, platforms, NULL);
     CHECK(status);
-    DPRINTF("Filled in platforms\n");
+ //   DPRINTF("Filled in platforms\n");
 
     //----------------------------------------------
     // Discover and initialize the devices
@@ -168,8 +168,8 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     int device_found = 0;
     const cl_uint maxDevices = 4;
     cl_device_id devices[maxDevices];
-    DPRINTF("Initializing IDs\n");
-    for (int i = 0; i < numPlatforms; i++) {
+    //DPRINTF("Initializing IDs\n");
+    for (int i = 0; i < (int)numPlatforms; i++) {
         status = clGetDeviceIDs(platforms[i],
                                 CL_DEVICE_TYPE_ALL,
                                 maxDevices,
@@ -186,7 +186,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
             if (strstr(buffer, "Altera") != NULL) {
                 device_found = 1;
             }
-            DPRINTF("%s\n", buffer);
+//            DPRINTF("%s\n", buffer);
 #elif defined(NVIDIA_CL)
             if (strstr(buffer, "NVIDIA") != NULL) {
                 device_found = 1;
@@ -196,7 +196,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
                 device_found = 1;
             }
 #endif
-            DPRINTF("Platform found : %s\n", buffer);
+//            DPRINTF("Platform found : %s\n", buffer);
             device_found = 1;
         }
     }
@@ -205,7 +205,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         DPRINTF("failed to find a OpenCL device\n");
         exit(-1);
     }
-
+/*
     DPRINTF("Total number of devices: %d", numDevices);
     for (int i = 0; i < numDevices; i++) {
         clGetDeviceInfo(devices[i],
@@ -234,21 +234,21 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
                         sizeof(unsigned long),
                         &buffer,
                         NULL);
-        //DPRINTF("Global Memory Size: %i\n", *((unsigned long*)buffer));
+        DPRINTF("Global Memory Size: %i\n", *((unsigned long*)buffer));
 
         clGetDeviceInfo(devices[i],
                         CL_DEVICE_MAX_MEM_ALLOC_SIZE,
                         sizeof(unsigned long),
                         &buffer,
                         NULL);
-        //DPRINTF("Global Memory Allocation Size: %i\n\n", *((unsigned long*)buffer));
+        DPRINTF("Global Memory Allocation Size: %i\n\n", *((unsigned long*)buffer));
     }
-
+*/
     //----------------------------------------------
     // Create a context
     //----------------------------------------------
 
-    DPRINTF("\n===== Host-CPU setting up the OpenCL command queues ======\n\n");
+    //DPRINTF("\n===== Host-CPU setting up the OpenCL command queues ======\n\n");
 
     cl_context context = NULL;
 
@@ -298,7 +298,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     cl_mem input_B_buf;
     cl_mem output_C_buf;
 
-    DPRINTF("\n===== Host-CPU transferring W and X to the FPGA device global memory (DDR4) via PCIe ======\n\n");
+    //DPRINTF("\n===== Host-CPU transferring W and X to the FPGA device global memory (DDR4) via PCIe ======\n\n");
     input_A_buf = clCreateBuffer(
         context,
         //CL_MEM_READ_ONLY | CL_MEM_BANK_1_ALTERA,
@@ -358,7 +358,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     //----------------------------------------------
     // Create the program from binaries
     //----------------------------------------------
-    DPRINTF("\n===== Host-CPU setting up OpenCL program and kernels ======\n\n");
+    //DPRINTF("\n===== Host-CPU setting up OpenCL program and kernels ======\n\n");
 
     cl_program program;
 
@@ -387,7 +387,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     }
     fclose(fp);
 
-    DPRINTF("Create program with binary\n");
+    //DPRINTF("Create program with binary\n");
     // Create a program using clCreateProgramWithBinary()
     program = clCreateProgramWithBinary(
         context,
@@ -407,18 +407,18 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     if (status != CL_SUCCESS) {
         char log[128 * 1024] = {0};
         clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, 128 * 1024, log, NULL);
-        DPRINTF("%s\n", log);
+        //DPRINTF("%s\n", log);
         CHECK(status);
     }
 
     cl_kernel kernel[NUM_KERNELS_TO_CREATE];
 
     for (int j = 0; j < NUM_KERNELS_TO_CREATE; j++) {
-        DPRINTF("Creating kernel[%d]: %s\n", j, kernel_name[j]);
+        //DPRINTF("Creating kernel[%d]: %s\n", j, kernel_name[j]);
         kernel[j] = clCreateKernel(program, (const char *)kernel_name[j], &status);
         CHECK(status);
     }
-    DPRINTF("All kernels created\n");
+    //DPRINTF("All kernels created\n");
 
     // A_loader
     status = clSetKernelArg(
@@ -566,10 +566,10 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
 
     cl_event kernel_exec_event[NUM_KERNELS_TO_CREATE];
 
-    DPRINTF("\n===== Host-CPU enqeuing the OpenCL kernels to the FPGA device ======\n\n");
+    //DPRINTF("\n===== Host-CPU enqeuing the OpenCL kernels to the FPGA device ======\n\n");
     for (int i = 0; i < NUM_KERNELS_TO_CREATE; i++) {
         // Alternatively, can use clEnqueueTaskKernel
-        DPRINTF("clEnqueueNDRangeKernel[%d]: %s!\n", i, kernel_name[i]);
+        //DPRINTF("clEnqueueNDRangeKernel[%d]: %s!\n", i, kernel_name[i]);
         status = clEnqueueNDRangeKernel(
             cmdQueue[i],
             kernel[i],
@@ -582,21 +582,21 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
             &kernel_exec_event[i]);
         CHECK(status);
     }
-    DPRINTF(" *** FPGA execution started!\n");
-
+    //DPRINTF(" *** FPGA execution started!\n");
+    
     for (int i = 0; i < NUM_KERNELS_TO_CREATE; i++) {
         status = clFlush(cmdQueue[i]);
         CHECK(status);
     }
 
     for (int i = 0; i < NUM_QUEUES_TO_CREATE; i++) {
-        DPRINTF("cmd queue: %d\n", i);
+        //DPRINTF("cmd queue: %d\n", i);
         fflush(stdout);
         status = clFinish(cmdQueue[i]);
         CHECK(status);
     }
-    DPRINTF(" *** FPGA execution finished!\n");
-    DPRINTF("\n\n");
+    //DPRINTF(" *** FPGA execution finished!\n");
+    //DPRINTF("\n\n");
 
     double k_start_time[NUM_KERNELS_TO_CREATE];
     double k_end_time[NUM_KERNELS_TO_CREATE];
@@ -608,9 +608,9 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
             max_time = k_exec_time[i];
         }
     }
-    DPRINTF("Time taken: %lf sec\n\n", max_time);
+    //DPRINTF("Time taken: %lf sec\n\n", max_time);
 
-    printf("\n===== Reporting measured throughput ======\n\n");
+    //printf("\n===== Reporting measured throughput ======\n\n");
     double k_earliest_start_time = k_start_time[0];
     double k_latest_end_time = k_end_time[0];
 
@@ -626,25 +626,25 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     k_latest_end_time = k_end_time[NUM_KERNELS_TO_CREATE - 1];
 
     for (int i = 0; i < NUM_KERNELS_TO_CREATE; i++) {
-        printf("  Kernel execution time on FPGA: %s, \n   \t\t\t\t\t\t\t\t\texec time = %.5f s, start=%.5f s, end=%.5f s\n", kernel_name[i], k_exec_time[i], k_start_time[i], k_end_time[i]);
+    //    printf("  Kernel execution time on FPGA: %s, \n   \t\t\t\t\t\t\t\t\texec time = %.5f s, start=%.5f s, end=%.5f s\n", kernel_name[i], k_exec_time[i], k_start_time[i], k_end_time[i]);
     }
 
     double k_overall_exec_time = k_latest_end_time - k_earliest_start_time;
 
-    printf("\n");
-    printf("  Loader kernels start time\t\t= %.5f s\n", k_earliest_start_time);
-    printf("  Unloader kernels end time\t\t= %.5f s\n", k_latest_end_time);
-    printf("  FPGA GEMM exec time\t\t= %.5f s\n", k_overall_exec_time);
+    //printf("\n");
+    //printf("  Loader kernels start time\t\t= %.5f s\n", k_earliest_start_time);
+    //printf("  Unloader kernels end time\t\t= %.5f s\n", k_latest_end_time);
+    //printf("  FPGA GEMM exec time\t\t= %.5f s\n", k_overall_exec_time);
 
     // multiplied by 1.0e-9 to get G-FLOPs
-    printf("\n");
+    //printf("\n");
 
-    double num_operations = (double)2.0 * (TOTAL_K) * (double)(TOTAL_I) * (double)(TOTAL_J);
+    //double num_operations = (double)2.0 * (TOTAL_K) * (double)(TOTAL_I) * (double)(TOTAL_J);
 
-    printf("  # operations = %.0f\n", num_operations );
-    printf("  Throughput: %.5f GFLOPS\n", (double)1.0e-9 * num_operations / k_overall_exec_time);
+    //printf("  # operations = %.0f\n", num_operations );
+    //printf("  Throughput: %.5f GFLOPS\n", (double)1.0e-9 * num_operations / k_overall_exec_time);
 
-    DPRINTF("\n===== Host-CPU transferring result matrix C from the FPGA device global memory (DDR4) via PCIe ======\n\n");
+    //DPRINTF("\n===== Host-CPU transferring result matrix C from the FPGA device global memory (DDR4) via PCIe ======\n\n");
 
     // Read the results back from the device, blocking read
     float *serialized_Z;

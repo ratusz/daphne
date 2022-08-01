@@ -36,8 +36,8 @@ add_custom_command(
 #set(PREFIX ${PROJECT_SOURCE_DIR}/src/runtime/local/kernels/FPGAOPENCL)
 set(FPGAOPENCLKernels_SRC
         ${PREFIX}/MatMul.h
-	${PREFIX}/interface.cpp
-	${PREFIX}/interface.h
+	${PREFIX}/gemm_interface.cpp
+	${PREFIX}/gemm_interface.h
 	${PROJECT_BINARY_DIR}/FPGAOPENCLkernels.cpp
 )
 
