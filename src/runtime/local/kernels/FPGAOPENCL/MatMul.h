@@ -60,7 +60,7 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
     static void apply(DenseMatrix<float> *& res, const DenseMatrix<float> * lhs, const DenseMatrix<float> * rhs, DCTX(ctx)) {
         const size_t nr1 = lhs->getNumRows();
         const size_t nc1 = lhs->getNumCols();
-        //const size_t nr2 = rhs->getNumRows();
+        const size_t nr2 = rhs->getNumRows();
         const size_t nc2 = rhs->getNumCols();
         assert((nc1 == nr2) && "#cols of lhs and #rows of rhs must be the same");        
 
@@ -73,6 +73,12 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
 #define III  14
 #define JJJ  16
 #define KKK  16
+
+        assert((nr2%(II*III)!=0) && "lhs #rows number must be a multiple of 448");        
+        //printf("\n(nc1 modulo (JJ*JJJ)=%i ",nc1%(JJ*JJJ));
+	assert((nc1%(JJ*JJJ)!=0 || nc1<1024 || nr2%(JJ*JJJ)!=0 || nc2 <1024) && "#cols of lhs and #rows of rhs must be a multiple of 512 (and minimum 1024)");        
+	//printf("\n(nc2 modulo (KK*KKK) = %i \n", nc2%(KK*KKK) );
+	assert((nc2%(KK*KKK)!=0) && "#cols of rhs must be a multiple of 512");        
 
 // Testing purpose only: help define the sizes of test inputs
 // Can be arbitrarily set.
@@ -147,7 +153,7 @@ struct MatMul<DenseMatrix<double>, DenseMatrix<double>, DenseMatrix<double>> {
     static void apply(DenseMatrix<double> *& res, const DenseMatrix<double> * lhs, const DenseMatrix<double> * rhs, DCTX(ctx)) {
         const size_t nr1 = lhs->getNumRows();
         const size_t nc1 = lhs->getNumCols();
-        //const size_t nr2 = rhs->getNumRows();
+        const size_t nr2 = rhs->getNumRows();
         const size_t nc2 = rhs->getNumCols();
         assert((nc1 == nr2) && "#cols of lhs and #rows of rhs must be the same");
  
