@@ -217,7 +217,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     }
 #ifndef NDEBUG
     DPRINTF("Total number of devices: %d", numDevices);
-    for (int i = 0; i < numDevices; i++) {
+    for (unsigned int i = 0; i < numDevices; i++) {
         clGetDeviceInfo(devices[i],
                         CL_DEVICE_NAME,
                         4096,

@@ -20,10 +20,10 @@
 
 #project(FPGAOPENCLkernels)
 
-include_directories(/opt/intel/intelFPGA_pro/21.4/hld/examples_aoc/common/inc/ /opt/intel/intelFPGA_pro/21.4/hld/host/include/)
+include_directories($ENV{QUARTUSDIR}/hld/examples_aoc/common/inc/ $ENV{QUARTUSDIR}/hld/host/include/)
 
 set(PREFIX ${PROJECT_SOURCE_DIR}/src/runtime/local/kernels/FPGAOPENCL)
-message(STATUS "cmake fpga test!")
+#message(STATUS "cmake fpga test! $ENV{QUARTUSDIR}")
 add_custom_command(
     OUTPUT ${PROJECT_BINARY_DIR}/FPGAOPENCLkernels.cpp
     COMMAND python3 ARGS genKernelInst.py kernels.json
@@ -46,5 +46,5 @@ set_target_properties(FPGAOPENCLKernels PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PR
 
 target_include_directories(FPGAOPENCLKernels PUBLIC ${PROJECT_SOURCE_DIR}/src/)
 
-target_link_libraries(FPGAOPENCLKernels PUBLIC AllKernels LLVMSupport /opt/intel/intelFPGA_pro/21.4/hld/linux64/lib/libOpenCL.so)
+target_link_libraries(FPGAOPENCLKernels PUBLIC AllKernels LLVMSupport $ENV{QUARTUSDIR}/hld/linux64/lib/libOpenCL.so)
 

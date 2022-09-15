@@ -74,12 +74,13 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
 #define JJJ  16
 #define KKK  16
 
-        assert((nr2%(II*III)!=0) && "lhs #rows number must be a multiple of 448");        
-        //printf("\n(nc1 modulo (JJ*JJJ)=%i ",nc1%(JJ*JJJ));
-	assert((nc1%(JJ*JJJ)!=0 || nc1<1024 || nr2%(JJ*JJJ)!=0 || nc2 <1024) && "#cols of lhs and #rows of rhs must be a multiple of 512 (and minimum 1024)");        
-	//printf("\n(nc2 modulo (KK*KKK) = %i \n", nc2%(KK*KKK) );
-	assert((nc2%(KK*KKK)!=0) && "#cols of rhs must be a multiple of 512");        
-
+//      printf("nr1=%li nc1=%li nr2=%li nc2=%li \n", nr1,nc1,nr2,nc2);
+	assert((nr1%(II*III)==0) && "lhs #rows number must be a multiple of 448");        
+//      printf("\n(nc1 modulo (JJ*JJJ)=%li \n",nc1%(JJ*JJJ));
+	assert((nc1%(JJ*JJJ)==0 && nc1>512 && nr2%(JJ*JJJ)==0 && nc1>512) && "#cols of lhs and #rows of rhs must be a multiple of 512 (and minimum 1024)");        
+//      printf("\n(nc2 modulo (KK*KKK) = %li \n", nc2%(KK*KKK) );
+	assert((nc2%(KK*KKK)==0) && "#cols of rhs must be a multiple of 512");        
+       
 // Testing purpose only: help define the sizes of test inputs
 // Can be arbitrarily set.
 // matrix a: 10K * 2K
@@ -97,9 +98,9 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
 //    posix_memalign(&result, ACL_ALIGNMENT, size);
 //    return result;
 //}
-    const int OUTERMOST_I = ceil(nr1/448.0);
-    const int OUTERMOST_J = ceil(nc2/512.0);
-    const int OUTERMOST_K = ceil(nc1/512.0);
+    const int OUTERMOST_I = ceil(nr1/448);
+    const int OUTERMOST_J = ceil(nc2/512);
+    const int OUTERMOST_K = ceil(nc1/512);
 
     float *A, *B, *C;
     void *aa,*bb,*cc;
