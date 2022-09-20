@@ -128,6 +128,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         for (int k = 0; k < TOTAL_K; k++) {
             serialized_B[addr++] = B[j+k*TOTAL_J];
         }
+
 #ifndef NDEBUG
     DPRINTF("\n===== Host-CPU setting up the OpenCL platform and device ======\n\n");
 #endif
@@ -273,6 +274,16 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         NULL,
         &status);
     CHECK(status);
+
+
+   //new part    
+   // cl_context context = getFPGAContext(0);    
+   // cl_int status; 
+    
+    //old part
+
+
+
 
     //----------------------------------------------
     // Create command queues
