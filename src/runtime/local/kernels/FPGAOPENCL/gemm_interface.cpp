@@ -39,6 +39,11 @@
 #include <string>
 #include <sys/time.h>
 #include <time.h>
+#include <runtime/local/context/FPGAContext.h>
+#include <runtime/local/context/DaphneContext.h>
+#include <runtime/local/kernels/FPGAOPENCL/gemm_interface.h>
+
+
 
 // Parameters of the systolic array
 #define II   32
@@ -261,12 +266,12 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
 #ifndef NDEBUG
     DPRINTF("\n===== Host-CPU setting up the OpenCL command queues ======\n\n");
 #endif
-    cl_context context = NULL;
+    //cl_context context = NULL;
 
     // Create a context using clCreateContext() and
     // associate it with the device
 
-    context = clCreateContext(
+    cl_context context = clCreateContext(
         NULL,
         1,
         devices,
@@ -277,7 +282,8 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
 
 
    //new part    
-   // cl_context context = getFPGAContext(0);    
+   // cl_context context22 = 
+   getFPGAContext(0);    
    // cl_int status; 
     
     //old part
@@ -448,126 +454,146 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         kernel[0],
         0,
         sizeof(int),
-        (void *)&TOTAL_K);
+        //(void *)
+	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[0],
         1,
         sizeof(int),
-        (void *)&TOTAL_I);
+        //(void *)
+	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[0],
         2,
         sizeof(int),
-        (void *)&TOTAL_J);
+        //(void *)
+	&TOTAL_J);
     CHECK(status);
     status = clSetKernelArg(
         kernel[0],
         3,
         sizeof(cl_mem),
-        (void *)&input_A_buf);
+        //(void *)
+	&input_A_buf);
     CHECK(status);
     // B_loader
     status = clSetKernelArg(
         kernel[1],
         0,
         sizeof(int),
-        (void *)&TOTAL_K);
+        //(void *)
+	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[1],
         1,
         sizeof(int),
-        (void *)&TOTAL_I);
+        //(void *)
+	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[1],
         2,
         sizeof(int),
-        (void *)&TOTAL_J);
+        //(void *)
+	&TOTAL_J);
     CHECK(status);
     status = clSetKernelArg(
         kernel[1],
         3,
         sizeof(cl_mem),
-        (void *)&input_B_buf);
+        //(void *)
+	&input_B_buf);
     CHECK(status);
     // unloader
     status = clSetKernelArg(
         kernel[2],
         0,
         sizeof(int),
-        (void *)&TOTAL_I);
+        //(void *)
+	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[2],
         1,
         sizeof(int),
-        (void *)&TOTAL_J);
+        //(void *)
+	&TOTAL_J);
     CHECK(status);
     status = clSetKernelArg(
         kernel[2],
         2,
         sizeof(cl_mem),
-        (void *)&output_C_buf);
+        //(void *)
+	&output_C_buf);
     CHECK(status);
     // A_feeder
     status = clSetKernelArg(
         kernel[3],
         0,
         sizeof(int),
-        (void *)&TOTAL_K);
+        //(void *)
+	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[3],
         1,
         sizeof(int),
-        (void *)&TOTAL_I);
+        //(void *)
+	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[3],
         2,
         sizeof(int),
-        (void *)&TOTAL_J);
+        //(void *)
+	&TOTAL_J);
     CHECK(status);
     // B_feeder
     status = clSetKernelArg(
         kernel[4],
         0,
         sizeof(int),
-        (void *)&TOTAL_K);
+        //(void *)
+	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[4],
         1,
         sizeof(int),
-        (void *)&TOTAL_I);
+        //(void *)
+	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[4],
         2,
         sizeof(int),
-        (void *)&TOTAL_J);
+        //(void *)
+	&TOTAL_J);
     CHECK(status);
     // Out
     status = clSetKernelArg(
         kernel[5],
         0,
         sizeof(int),
-        (void *)&TOTAL_K);
+        //(void *)
+	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[5],
         1,
         sizeof(int),
-        (void *)&TOTAL_I);
+        //(void *)
+	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[5],
         2,
         sizeof(int),
-        (void *)&TOTAL_J);
+        //(void *)
+	&TOTAL_J);
     CHECK(status);
 
     //----------------------------------------------

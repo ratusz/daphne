@@ -14,59 +14,53 @@
  * limitations under the License.
  */
 
-//#include "AOCLUtils/aocl_utils.h"
-//#include "CL/opencl.h"
+#include "AOCLUtils/aocl_utils.h"
+#include "CL/opencl.h"
+#include "runtime/local/context/FPGAContext.h"
+//#include <cstdio>
+//#include <cstdlib>
+//#include <cstring>
+//#include <fstream>
+//#include <iomanip>
+//#include <iostream>
+//#include <math.h>
+//#include <sstream>
+//#include <stdint.h>
+//#include <stdio.h>
 
+using namespace std;
+using namespace aocl_utils;
+
+#define DPRINTF(...)     \
+    printf(__VA_ARGS__); \
+    fflush(stdout);
+
+#define CHECK(status)                                       \
+    if (status != CL_SUCCESS) {                             \
+        printf("error %d in line %d.\n", status, __LINE__); \
+        exit(1);                                            \
+    }
 
 void FPGAContext::destroy() {
 #ifndef NDEBUG
     std::cout << "Destroying FPGA context..." << std::endl;
 #endif
-//    CHECK_CUBLAS(cublasDestroy(cublas_handle));
+    //CHECK(clReleaseContext(context));
 }
 
 void FPGAContext::init() {
-//    CHECK_CUDART(cudaSetDevice(device_id));
-//    CHECK_CUDART(cudaGetDeviceProperties(&device_properties, device_id));
-
-//    size_t available; size_t total;
-//    cudaMemGetInfo(&available, &total);
-    // ToDo: make this a user config item
-//    float mem_usage = 0.9f;
-//    mem_budget = total * mem_usage;
-
-//#ifndef NDEBUG
-//    std::cout << "Using CUDA device " << device_id << ": " << device_properties.name  << "\nAvailable mem: "
-//            << available << " Total mem: " << total << " using " << mem_usage * 100 << "% thereof -> " << mem_budget
-//           << std::endl;
-//#endif
-//    CHECK_CUBLAS(cublasCreate(&cublas_handle));
-//    CHECK_CUSPARSE(cusparseCreate(&cusparse_handle));
-//    CHECK_CUDNN(cudnnCreate(&cudnn_handle));
-}
-
-std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
-
 #ifndef NDEBUG
     std::cout << "creating FPGA context..." << std::endl;
-#endif
-//    int device_count = -1;
-//    CHECK_CUDART(cudaGetDeviceCount(&device_count));
-
-#ifndef NDEBUG
     DPRINTF("\n===== Host-CPU setting up the OpenCL platform and device ======\n\n");
 #endif
     // Use this to check the output of each API call
     cl_int status;
-
-    //----------------------------------------------
     // Discover and initialize the platforms
     //----------------------------------------------
-    cl_uint numPlatforms = 0;
-    cl_platform_id *platforms = NULL;
+//    cl_uint numPlatforms = 0;
+ //cl_platform_id *platforms = NULL;
 
-    // Use clGetPlatformIDs() to retrieve the
-    // number of platforms
+    // Use clGetPlatformIDs() to retrieve the  number of platforms
     status = clGetPlatformIDs(0, NULL, &numPlatforms);
 #ifndef NDEBUG
     DPRINTF("Number of platforms = %d\n", numPlatforms);
@@ -75,30 +69,20 @@ std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
     // Allocate enough space for each platform
     // platforms = (cl_platform_id*) acl_aligned_malloc (numplatforms * sizeof(cl_platform_id));
     platforms = (cl_platform_id *)malloc(numPlatforms * sizeof(cl_platform_id));
-
 #ifndef NDEBUG
     DPRINTF("Allocated space for Platform\n");
 #endif
- 
     // Fill in platforms with clGetPlatformIDs()
     status = clGetPlatformIDs(numPlatforms, platforms, NULL);
     CHECK(status);
 #ifndef NDEBUG
     DPRINTF("Filled in platforms\n");
 #endif
- 
-    //----------------------------------------------
-    // Discover and initialize the devices
-    //----------------------------------------------
-
-    cl_uint numDevices = 0;
-
-    // Device info
     char buffer[4096];
     unsigned int buf_uint;
     int device_found = 0;
-    const cl_uint maxDevices = 4;
-    cl_device_id devices[maxDevices];
+    //const cl_uint maxDevices = 4;
+    //cl_device_id devices[maxDevices];
 #ifndef NDEBUG
     DPRINTF("Initializing IDs\n");
 #endif
@@ -135,7 +119,6 @@ std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
 	    device_found = 1;
         }
     }
-
     if (!device_found) {
         DPRINTF("failed to find a OpenCL device\n");
         exit(-1);
@@ -149,28 +132,24 @@ std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
                         buffer,
                         NULL);
         DPRINTF("\nDevice Name: %s\n", buffer);
-
         clGetDeviceInfo(devices[i],
                         CL_DEVICE_VENDOR,
                         4096,
                         buffer,
                         NULL);
         DPRINTF("Device Vendor: %s\n", buffer);
-
         clGetDeviceInfo(devices[i],
                         CL_DEVICE_MAX_COMPUTE_UNITS,
                         sizeof(buf_uint),
                         &buf_uint,
                         NULL);
         DPRINTF("Device Computing Units: %u\n", buf_uint);
-
         clGetDeviceInfo(devices[i],
                         CL_DEVICE_GLOBAL_MEM_SIZE,
                         sizeof(unsigned long),
                         &buffer,
                         NULL);
         DPRINTF("Global Memory Size: %li\n", *((unsigned long*)buffer));
-
         clGetDeviceInfo(devices[i],
                         CL_DEVICE_MAX_MEM_ALLOC_SIZE,
                         sizeof(unsigned long),
@@ -181,15 +160,9 @@ std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
 #endif
     //----------------------------------------------
     // Create a context
-    //----------------------------------------------
 #ifndef NDEBUG
     DPRINTF("\n===== Host-CPU setting up the OpenCL command queues ======\n\n");
 #endif
-    cl_context context = NULL;
-
-    // Create a context using clCreateContext() and
-    // associate it with the device
-
     context = clCreateContext(
         NULL,
         1,
@@ -198,16 +171,17 @@ std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
         NULL,
         &status);
     CHECK(status);
+}
 
+std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
 
-
-    if(device_count < 1) {
+    	if(numDevices < 1) {
         std::cerr << "Not creating requested FPGA context. No FPGA devices available." << std::endl;
         return nullptr;
     }
 
-    if(device_id >= device_count) {
-        std::cerr << "Requested device ID " << device_id << " >= device count " << device_count << std::endl;
+    if(device_id >= (int)numDevices) {
+        std::cerr << "Requested device ID " << device_id << " >= device count "<<std::endl;// << device_count << std::endl;
         return nullptr;
     }
 
@@ -215,4 +189,5 @@ std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
     ctx->init();
     return ctx;
 }
+
 

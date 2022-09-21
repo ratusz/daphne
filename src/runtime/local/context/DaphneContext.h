@@ -74,6 +74,9 @@ struct DaphneContext {
         for (auto& ctx : cuda_contexts) {
             ctx->destroy();
         }
+        for (auto& ctx : fpga_contexts) {
+            ctx->destroy();
+        }
         cuda_contexts.clear();
         fpga_contexts.clear();
 
@@ -86,12 +89,12 @@ struct DaphneContext {
         return cuda_contexts[dev_id].get();
     }
 #endif
-#ifdef USE_FPGAOPENCL
+//#ifdef USE_FPGAOPENCL
     // ToDo: in a multi device setting this should use a find call instead of a direct [] access
     [[nodiscard]] FPGAContext* getFPGAContext(int dev_id) const {
        return dynamic_cast<FPGAContext*>(fpga_contexts[dev_id].get());
     }
-#endif
+//#endif
 
 
 

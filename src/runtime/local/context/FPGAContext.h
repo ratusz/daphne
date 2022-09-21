@@ -20,8 +20,8 @@
 #include "IContext.h"
 //#include <runtime/local/kernels/CUDA/HostUtils.h>
 //#include <cublasLt.h>
-//#include "AOCLUtils/aocl_utils.h"
-//#include "CL/opencl.h"
+#include <AOCLUtils/aocl_utils.h>
+#include <CL/opencl.h>
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -29,6 +29,13 @@
 class FPGAContext : public IContext {
     int device_id = -1;
     size_t mem_budget = 0;
+    static cl_uint numPlatforms;// = 0;
+    static cl_platform_id *platforms;// = NULL;
+    static const cl_uint maxDevices;// = 4;
+    static cl_device_id devices[4];//maxDevices];
+    static cl_uint numDevices;// = 0;
+    static cl_context context;// = NULL;
+
 
 
     explicit FPGAContext(int id) : device_id(id) { }
