@@ -65,6 +65,11 @@ struct DaphneUserConfig {
     // ToDo: This is an arbitrary default taken from sample code
 //    int cublas_workspace_size = 1024 * 1024 * 4;
 #endif
+#ifdef USE_FPGAOPENCL
+    std::vector<int> fpga_devices;
+#endif
+    
+    
     std::string libdir;
     std::vector<std::string> library_paths;
 };

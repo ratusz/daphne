@@ -29,17 +29,23 @@
 class FPGAContext : public IContext {
     int device_id = -1;
     size_t mem_budget = 0;
-    static cl_uint numPlatforms;// = 0;
-    static cl_platform_id *platforms;// = NULL;
-    static const cl_uint maxDevices;// = 4;
-    static cl_device_id devices[4];//maxDevices];
-    static cl_uint numDevices;// = 0;
-    static cl_context context;// = NULL;
 
 
-
-    explicit FPGAContext(int id) : device_id(id) { }
+    explicit FPGAContext(int id) : device_id(id) {
+	    //std::cout<<"fpga context constructor"<<std::endl; 
+	    }
 public:
+    cl_uint numPlatforms = 0;
+    cl_platform_id *platforms = NULL;
+    cl_uint maxDevices = 4;
+    cl_device_id devices[4];//maxDevices];
+    cl_uint numDevices = 0;
+    cl_context context = NULL;
+
+
+
+
+
     FPGAContext() = delete;
     FPGAContext(const FPGAContext&) = delete;
     FPGAContext& operator=(const FPGAContext&) = delete;

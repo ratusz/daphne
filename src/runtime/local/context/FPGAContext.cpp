@@ -45,45 +45,32 @@ void FPGAContext::destroy() {
 #ifndef NDEBUG
     std::cout << "Destroying FPGA context..." << std::endl;
 #endif
-    //CHECK(clReleaseContext(context));
 }
 
 void FPGAContext::init() {
 #ifndef NDEBUG
     std::cout << "creating FPGA context..." << std::endl;
     DPRINTF("\n===== Host-CPU setting up the OpenCL platform and device ======\n\n");
+    unsigned int buf_uint;
 #endif
-    // Use this to check the output of each API call
     cl_int status;
-    // Discover and initialize the platforms
-    //----------------------------------------------
-//    cl_uint numPlatforms = 0;
- //cl_platform_id *platforms = NULL;
+    char buffer[4096];
+    int device_found = 0;
 
     // Use clGetPlatformIDs() to retrieve the  number of platforms
     status = clGetPlatformIDs(0, NULL, &numPlatforms);
 #ifndef NDEBUG
     DPRINTF("Number of platforms = %d\n", numPlatforms);
 #endif
- 
     // Allocate enough space for each platform
-    // platforms = (cl_platform_id*) acl_aligned_malloc (numplatforms * sizeof(cl_platform_id));
     platforms = (cl_platform_id *)malloc(numPlatforms * sizeof(cl_platform_id));
 #ifndef NDEBUG
     DPRINTF("Allocated space for Platform\n");
 #endif
-    // Fill in platforms with clGetPlatformIDs()
     status = clGetPlatformIDs(numPlatforms, platforms, NULL);
     CHECK(status);
 #ifndef NDEBUG
     DPRINTF("Filled in platforms\n");
-#endif
-    char buffer[4096];
-    unsigned int buf_uint;
-    int device_found = 0;
-    //const cl_uint maxDevices = 4;
-    //cl_device_id devices[maxDevices];
-#ifndef NDEBUG
     DPRINTF("Initializing IDs\n");
 #endif
     for (int i = 0; i < (int)numPlatforms; i++) {
@@ -175,7 +162,7 @@ void FPGAContext::init() {
 
 std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
 
-    	if(numDevices < 1) {
+/*    	if(FPGAContext::numDevices < 1) {
         std::cerr << "Not creating requested FPGA context. No FPGA devices available." << std::endl;
         return nullptr;
     }
@@ -184,9 +171,10 @@ std::unique_ptr<IContext> FPGAContext::createFpgaContext(int device_id) {
         std::cerr << "Requested device ID " << device_id << " >= device count "<<std::endl;// << device_count << std::endl;
         return nullptr;
     }
-
+*/
     auto ctx = std::unique_ptr<FPGAContext>(new FPGAContext(device_id));
     ctx->init();
+
     return ctx;
 }
 

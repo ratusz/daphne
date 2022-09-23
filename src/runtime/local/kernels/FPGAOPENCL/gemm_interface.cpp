@@ -104,7 +104,7 @@ double compute_kernel_execution_time(cl_event &event, double &start_d, double &e
 }
 
 
-int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const int OUTERMOST_J, const int OUTERMOST_K) {
+int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const int OUTERMOST_J, const int OUTERMOST_K, DCTX(ctx)) {
     const int TOTAL_I = III * II * OUTERMOST_I;
     const int TOTAL_J = JJJ * JJ * OUTERMOST_J;
     const int TOTAL_K = KKK * KK * OUTERMOST_K;
@@ -134,162 +134,9 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
             serialized_B[addr++] = B[j+k*TOTAL_J];
         }
 
-#ifndef NDEBUG
-    DPRINTF("\n===== Host-CPU setting up the OpenCL platform and device ======\n\n");
-#endif
-    // Use this to check the output of each API call
+
     cl_int status;
-
-    //----------------------------------------------
-    // Discover and initialize the platforms
-    //----------------------------------------------
-    cl_uint numPlatforms = 0;
-    cl_platform_id *platforms = NULL;
-
-    // Use clGetPlatformIDs() to retrieve the
-    // number of platforms
-    status = clGetPlatformIDs(0, NULL, &numPlatforms);
-#ifndef NDEBUG
-    DPRINTF("Number of platforms = %d\n", numPlatforms);
-#endif
- 
-    // Allocate enough space for each platform
-    // platforms = (cl_platform_id*) acl_aligned_malloc (numplatforms * sizeof(cl_platform_id));
-    platforms = (cl_platform_id *)malloc(numPlatforms * sizeof(cl_platform_id));
-
-#ifndef NDEBUG
-    DPRINTF("Allocated space for Platform\n");
-#endif
- 
-    // Fill in platforms with clGetPlatformIDs()
-    status = clGetPlatformIDs(numPlatforms, platforms, NULL);
-    CHECK(status);
-#ifndef NDEBUG
-    DPRINTF("Filled in platforms\n");
-#endif
- 
-    //----------------------------------------------
-    // Discover and initialize the devices
-    //----------------------------------------------
-
-    cl_uint numDevices = 0;
-
-    // Device info
-    char buffer[4096];
-    unsigned int buf_uint;
-    int device_found = 0;
-    const cl_uint maxDevices = 4;
-    cl_device_id devices[maxDevices];
-#ifndef NDEBUG
-    DPRINTF("Initializing IDs\n");
-#endif
-    for (int i = 0; i < (int)numPlatforms; i++) {
-        status = clGetDeviceIDs(platforms[i],
-                                CL_DEVICE_TYPE_ALL,
-                                maxDevices,
-                                devices,
-                                &numDevices);
-
-        if (status == CL_SUCCESS) {
-            clGetPlatformInfo(platforms[i],
-                              CL_PLATFORM_NAME,
-                              4096,
-                              buffer,
-                              NULL);
-#if defined(ALTERA_CL)
-            if (strstr(buffer, "Altera") != NULL) {
-                device_found = 1;
-            }
-//            DPRINTF("%s\n", buffer);
-#elif defined(NVIDIA_CL)
-            if (strstr(buffer, "NVIDIA") != NULL) {
-                device_found = 1;
-            }
-#else
-            if (strstr(buffer, "Intel") != NULL) {
-                device_found = 1;
-            }
-#endif
-#ifndef NDEBUG
-            DPRINTF("Platform found : %s\n", buffer);
-#endif
-	    device_found = 1;
-        }
-    }
-
-    if (!device_found) {
-        DPRINTF("failed to find a OpenCL device\n");
-        exit(-1);
-    }
-#ifndef NDEBUG
-    DPRINTF("Total number of devices: %d", numDevices);
-    for (unsigned int i = 0; i < numDevices; i++) {
-        clGetDeviceInfo(devices[i],
-                        CL_DEVICE_NAME,
-                        4096,
-                        buffer,
-                        NULL);
-        DPRINTF("\nDevice Name: %s\n", buffer);
-
-        clGetDeviceInfo(devices[i],
-                        CL_DEVICE_VENDOR,
-                        4096,
-                        buffer,
-                        NULL);
-        DPRINTF("Device Vendor: %s\n", buffer);
-
-        clGetDeviceInfo(devices[i],
-                        CL_DEVICE_MAX_COMPUTE_UNITS,
-                        sizeof(buf_uint),
-                        &buf_uint,
-                        NULL);
-        DPRINTF("Device Computing Units: %u\n", buf_uint);
-
-        clGetDeviceInfo(devices[i],
-                        CL_DEVICE_GLOBAL_MEM_SIZE,
-                        sizeof(unsigned long),
-                        &buffer,
-                        NULL);
-        DPRINTF("Global Memory Size: %li\n", *((unsigned long*)buffer));
-
-        clGetDeviceInfo(devices[i],
-                        CL_DEVICE_MAX_MEM_ALLOC_SIZE,
-                        sizeof(unsigned long),
-                        &buffer,
-                        NULL);
-        DPRINTF("Global Memory Allocation Size: %li\n\n", *((unsigned long*)buffer));
-    }
-#endif
-    //----------------------------------------------
-    // Create a context
-    //----------------------------------------------
-#ifndef NDEBUG
-    DPRINTF("\n===== Host-CPU setting up the OpenCL command queues ======\n\n");
-#endif
-    //cl_context context = NULL;
-
-    // Create a context using clCreateContext() and
-    // associate it with the device
-
-    cl_context context = clCreateContext(
-        NULL,
-        1,
-        devices,
-        NULL,
-        NULL,
-        &status);
-    CHECK(status);
-
-
-   //new part    
-   // cl_context context22 = 
-   getFPGAContext(0);    
-   // cl_int status; 
-    
-    //old part
-
-
-
+    auto fctx = ctx->getFPGAContext(0);    
 
     //----------------------------------------------
     // Create command queues
@@ -302,8 +149,8 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     for (int i = 0; i < NUM_QUEUES_TO_CREATE; i++) {
         //fDPRINTF(stdout,"cmdQueue i = %d\n", i);
         cmdQueue[i] = clCreateCommandQueue(
-            context,
-            devices[0],
+            fctx->context,
+            fctx->devices[0],
             CL_QUEUE_PROFILING_ENABLE,
             &status);
         CHECK(status);
@@ -311,8 +158,8 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
 
     //fDPRINTF(stdout,"cmdQueue i = %d, a queue for reading the C buffer\n", i);
     cmdQueue[NUM_QUEUES_TO_CREATE] = clCreateCommandQueue(
-        context,
-        devices[0],
+        fctx->context,
+        fctx->devices[0],
         CL_QUEUE_PROFILING_ENABLE,
         &status);
     CHECK(status);
@@ -320,7 +167,6 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     //----------------------------------------------
     // Create device buffers
     //----------------------------------------------
-
     cl_mem input_A_buf;
     cl_mem input_B_buf;
     cl_mem output_C_buf;
@@ -328,8 +174,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     DPRINTF("\n===== Host-CPU transferring W and X to the FPGA device global memory (DDR4) via PCIe ======\n\n");
 #endif
     input_A_buf = clCreateBuffer(
-        context,
-        //CL_MEM_READ_ONLY | CL_MEM_BANK_1_ALTERA,
+        fctx->context,
         CL_MEM_READ_ONLY,
         num_elem_A * sizeof(cl_float),
         NULL,
@@ -337,8 +182,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     CHECK(status);
 
     input_B_buf = clCreateBuffer(
-        context,
-        //CL_MEM_READ_ONLY | CL_MEM_BANK_1_ALTERA,
+        fctx->context,
         CL_MEM_READ_ONLY,
         num_elem_B * sizeof(cl_float),
         NULL,
@@ -346,8 +190,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     CHECK(status);
 
     output_C_buf = clCreateBuffer(
-        context,
-        //CL_MEM_WRITE_ONLY | CL_MEM_BANK_1_ALTERA,
+        fctx->context,
         CL_MEM_WRITE_ONLY,
         num_elem_C * sizeof(cl_float),
         NULL,
@@ -357,7 +200,6 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     //----------------------------------------------
     // Write host data to device buffers
     //----------------------------------------------
-
     // blocking writes
     status = clEnqueueWriteBuffer(
         cmdQueue[0],
@@ -389,7 +231,6 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     //DPRINTF("\n===== Host-CPU setting up OpenCL program and kernels ======\n\n");
 
     cl_program program;
-
     size_t binary_length;
     const unsigned char *binary;
 
@@ -418,9 +259,9 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     //DPRINTF("Create program with binary\n");
     // Create a program using clCreateProgramWithBinary()
     program = clCreateProgramWithBinary(
-        context,
+        fctx->context,
         1,
-        devices,
+        fctx->devices,
         &binary_length,
         (const unsigned char **)&binary,
         &status,
@@ -430,19 +271,19 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     //----------------------------------------------
     // Create the kernel
     //----------------------------------------------
-
     status = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     if (status != CL_SUCCESS) {
         char log[128 * 1024] = {0};
-        clGetProgramBuildInfo(program, devices[0], CL_PROGRAM_BUILD_LOG, 128 * 1024, log, NULL);
-        //DPRINTF("%s\n", log);
+        clGetProgramBuildInfo(
+		program, 
+		fctx->devices[0], 
+		CL_PROGRAM_BUILD_LOG, 128 * 1024, log, NULL);
         CHECK(status);
     }
 
     cl_kernel kernel[NUM_KERNELS_TO_CREATE];
 
     for (int j = 0; j < NUM_KERNELS_TO_CREATE; j++) {
-        //DPRINTF("Creating kernel[%d]: %s\n", j, kernel_name[j]);
         kernel[j] = clCreateKernel(program, (const char *)kernel_name[j], &status);
         CHECK(status);
     }
@@ -454,28 +295,24 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         kernel[0],
         0,
         sizeof(int),
-        //(void *)
 	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[0],
         1,
         sizeof(int),
-        //(void *)
 	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[0],
         2,
         sizeof(int),
-        //(void *)
 	&TOTAL_J);
     CHECK(status);
     status = clSetKernelArg(
         kernel[0],
         3,
         sizeof(cl_mem),
-        //(void *)
 	&input_A_buf);
     CHECK(status);
     // B_loader
@@ -483,28 +320,24 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         kernel[1],
         0,
         sizeof(int),
-        //(void *)
 	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[1],
         1,
         sizeof(int),
-        //(void *)
 	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[1],
         2,
         sizeof(int),
-        //(void *)
 	&TOTAL_J);
     CHECK(status);
     status = clSetKernelArg(
         kernel[1],
         3,
         sizeof(cl_mem),
-        //(void *)
 	&input_B_buf);
     CHECK(status);
     // unloader
@@ -512,21 +345,18 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         kernel[2],
         0,
         sizeof(int),
-        //(void *)
 	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[2],
         1,
         sizeof(int),
-        //(void *)
 	&TOTAL_J);
     CHECK(status);
     status = clSetKernelArg(
         kernel[2],
         2,
         sizeof(cl_mem),
-        //(void *)
 	&output_C_buf);
     CHECK(status);
     // A_feeder
@@ -534,21 +364,18 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         kernel[3],
         0,
         sizeof(int),
-        //(void *)
 	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[3],
         1,
         sizeof(int),
-        //(void *)
 	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[3],
         2,
         sizeof(int),
-        //(void *)
 	&TOTAL_J);
     CHECK(status);
     // B_feeder
@@ -556,21 +383,18 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         kernel[4],
         0,
         sizeof(int),
-        //(void *)
 	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[4],
         1,
         sizeof(int),
-        //(void *)
 	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[4],
         2,
         sizeof(int),
-        //(void *)
 	&TOTAL_J);
     CHECK(status);
     // Out
@@ -578,21 +402,18 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
         kernel[5],
         0,
         sizeof(int),
-        //(void *)
 	&TOTAL_K);
     CHECK(status);
     status = clSetKernelArg(
         kernel[5],
         1,
         sizeof(int),
-        //(void *)
 	&TOTAL_I);
     CHECK(status);
     status = clSetKernelArg(
         kernel[5],
         2,
         sizeof(int),
-        //(void *)
 	&TOTAL_J);
     CHECK(status);
 
@@ -654,7 +475,7 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
 #ifndef NDEBUG
     DPRINTF(" *** FPGA execution finished!\n");
     DPRINTF("\n\n");
-#endif    
+//#endif    
  
     double k_start_time[NUM_KERNELS_TO_CREATE];
     double k_end_time[NUM_KERNELS_TO_CREATE];
@@ -666,14 +487,14 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
             max_time = k_exec_time[i];
         }
     }
-#ifndef NDEBUG
+//#ifndef NDEBUG
     DPRINTF("Time taken: %lf sec\n\n", max_time);
 
     printf("\n===== Reporting measured throughput ======\n\n");
-#endif    
+//#endif    
     double k_earliest_start_time = k_start_time[0];
     double k_latest_end_time = k_end_time[0];
-
+    
     for (int i = 1; i < NUM_KERNELS_TO_CREATE; i++) {
         if (k_start_time[i] < k_earliest_start_time)
             k_earliest_start_time = k_start_time[i];
@@ -686,13 +507,12 @@ int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const
     k_latest_end_time = k_end_time[NUM_KERNELS_TO_CREATE - 1];
 
     for (int i = 0; i < NUM_KERNELS_TO_CREATE; i++) {
-#ifndef NDEBUG
         printf("  Kernel execution time on FPGA: %s, \n   \t\t\t\t\t\t\t\t\texec time = %.5f s, start=%.5f s, end=%.5f s\n", kernel_name[i], k_exec_time[i], k_start_time[i], k_end_time[i]);
-#endif
     }
-
+//#endif
+ 
     double k_overall_exec_time = k_latest_end_time - k_earliest_start_time;
-#ifndef NDEBUG
+//#ifndef NDEBUG
     printf("\n");
     printf("  Loader kernels start time\t\t= %.5f s\n", k_earliest_start_time);
     printf("  Unloader kernels end time\t\t= %.5f s\n", k_latest_end_time);

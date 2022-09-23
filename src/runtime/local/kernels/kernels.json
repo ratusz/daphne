@@ -435,6 +435,21 @@
     },
     {
         "kernelTemplate": {
+            "header": "CreateFPGAContext.h",
+            "opName": "createFPGAContext",
+            "returnType": "void",
+            "templateParams": [],
+            "runtimeParams": []
+        },
+        "api": [
+            {
+                "name":  ["FPGAOPENCL"],
+                "instantiations": [[]]
+
+            }]
+    },
+    {
+        "kernelTemplate": {
             "header": "CreateFrame.h",
             "opName": "createFrame",
             "returnType": "void",

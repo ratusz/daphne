@@ -1208,6 +1208,12 @@ def Daphne_CreateCUDAContextOp : Daphne_Op<"createCUDAContext", [CUDASupport]> {
     let results = (outs);
 }
 
+def Daphne_CreateFPGAContextOp : Daphne_Op<"createFPGAContext", [FPGAOPENCLSupport]> {
+    let arguments = (ins);
+    let results = (outs);
+}
+
+
 // ****************************************************************************
 // Vectorized operations
 // ****************************************************************************

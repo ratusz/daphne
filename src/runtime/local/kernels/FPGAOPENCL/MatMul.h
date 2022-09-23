@@ -60,10 +60,11 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
     static void apply(DenseMatrix<float> *& res, const DenseMatrix<float> * lhs, const DenseMatrix<float> * rhs, DCTX(ctx)) {
         const size_t nr1 = lhs->getNumRows();
         const size_t nc1 = lhs->getNumCols();
-        const size_t nr2 = rhs->getNumRows();
         const size_t nc2 = rhs->getNumCols();
+#ifndef NDEBUG
+        const size_t nr2 = rhs->getNumRows();
         assert((nc1 == nr2) && "#cols of lhs and #rows of rhs must be the same");        
-
+#endif
 //	printf("\ntest MatMul f32 \n");
 // Parameters of the systolic array in the bitstream. Do not change.
 
@@ -74,13 +75,11 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
 #define JJJ  16
 #define KKK  16
 
-//      printf("nr1=%li nc1=%li nr2=%li nc2=%li \n", nr1,nc1,nr2,nc2);
+#ifndef NDEBUG
 	assert((nr1%(II*III)==0) && "lhs #rows number must be a multiple of 448");        
-//      printf("\n(nc1 modulo (JJ*JJJ)=%li \n",nc1%(JJ*JJJ));
 	assert((nc1%(JJ*JJJ)==0 && nc1>512 && nr2%(JJ*JJJ)==0 && nc1>512) && "#cols of lhs and #rows of rhs must be a multiple of 512 (and minimum 1024)");        
-//      printf("\n(nc2 modulo (KK*KKK) = %li \n", nc2%(KK*KKK) );
 	assert((nc2%(KK*KKK)==0) && "#cols of rhs must be a multiple of 512");        
-       
+#endif       
 // Testing purpose only: help define the sizes of test inputs
 // Can be arbitrarily set.
 // matrix a: 10K * 2K
@@ -103,7 +102,7 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
     const int OUTERMOST_K = ceil(nc1/512);
 
     float *A, *B, *C;
-    void *aa,*bb,*cc;
+    void *aa=NULL,*bb=NULL,*cc=NULL;
     const int TOTAL_I = III * II * OUTERMOST_I;
     const int TOTAL_J = JJJ * JJ * OUTERMOST_J;
     const int TOTAL_K = KKK * KK * OUTERMOST_K;
@@ -133,7 +132,7 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
      
     //printf("\nA values %f\n",*A);
     //printf("\nB values %f\n",*B);
-    sgemm(A, B, C, OUTERMOST_I, OUTERMOST_J, OUTERMOST_K);
+    sgemm(A, B, C, OUTERMOST_I, OUTERMOST_J, OUTERMOST_K, ctx);
  
   //  printf("\nC values %f\n",*C);
  
@@ -154,10 +153,11 @@ struct MatMul<DenseMatrix<double>, DenseMatrix<double>, DenseMatrix<double>> {
     static void apply(DenseMatrix<double> *& res, const DenseMatrix<double> * lhs, const DenseMatrix<double> * rhs, DCTX(ctx)) {
         const size_t nr1 = lhs->getNumRows();
         const size_t nc1 = lhs->getNumCols();
-        const size_t nr2 = rhs->getNumRows();
         const size_t nc2 = rhs->getNumCols();
+#ifndef NDEBUG
+        const size_t nr2 = rhs->getNumRows();
         assert((nc1 == nr2) && "#cols of lhs and #rows of rhs must be the same");
- 
+#endif 
         if(res == nullptr)
             res = DataObjectFactory::create<DenseMatrix<double>>(nr1, nc2, false);
 
