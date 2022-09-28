@@ -35,7 +35,8 @@ namespace FPGAOPENCL {
 
 template<class DTRes, class DTLhs, class DTRhs>
 struct MatMul {
-    static void apply(DTRes *& res, const DTLhs * lhs, const DTRhs * rhs, DCTX(ctx)) = delete;
+//   static void apply(DTRes *& res, const DTLhs * lhs, const DTRhs * rhs, DCTX(ctx)) = delete;
+   static void apply(DTRes *& res, const DTLhs * lhs, const DTRhs * rhs, bool transa, bool transb, DCTX(ctx)) = delete;
 };
 
 // ****************************************************************************
@@ -43,8 +44,8 @@ struct MatMul {
 // ****************************************************************************
 
 template<class DTRes, class DTLhs, class DTRhs>
-void matMul(DTRes *& res, const DTLhs * lhs, const DTRhs * rhs, DCTX(ctx)) {
-    MatMul<DTRes, DTLhs, DTRhs>::apply(res, lhs, rhs, ctx);
+void matMul(DTRes *& res, const DTLhs * lhs, const DTRhs * rhs, bool transa, bool transb, DCTX(ctx)) {
+    MatMul<DTRes, DTLhs, DTRhs>::apply(res, lhs, rhs,transa, transb, ctx);
 }
 
 // ****************************************************************************
@@ -57,7 +58,7 @@ void matMul(DTRes *& res, const DTLhs * lhs, const DTRhs * rhs, DCTX(ctx)) {
 
 template<>
 struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
-    static void apply(DenseMatrix<float> *& res, const DenseMatrix<float> * lhs, const DenseMatrix<float> * rhs, DCTX(ctx)) {
+    static void apply(DenseMatrix<float> *& res, const DenseMatrix<float> * lhs, const DenseMatrix<float> * rhs, bool transa, bool transb,DCTX(ctx)) {
         const size_t nr1 = lhs->getNumRows();
         const size_t nc1 = lhs->getNumCols();
         const size_t nc2 = rhs->getNumCols();
@@ -147,10 +148,10 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
 
    }
 };
-
+/* TODO
 template<>
 struct MatMul<DenseMatrix<double>, DenseMatrix<double>, DenseMatrix<double>> {
-    static void apply(DenseMatrix<double> *& res, const DenseMatrix<double> * lhs, const DenseMatrix<double> * rhs, DCTX(ctx)) {
+    static void apply(DenseMatrix<double> *& res, const DenseMatrix<double> * lhs, const DenseMatrix<double> * rhs, bool transa, bool transb, DCTX(ctx)) {
         const size_t nr1 = lhs->getNumRows();
         const size_t nc1 = lhs->getNumCols();
         const size_t nc2 = rhs->getNumCols();
@@ -173,7 +174,7 @@ struct MatMul<DenseMatrix<double>, DenseMatrix<double>, DenseMatrix<double>> {
                 rhs->getRowSkip(), 0, res->getValues(), res->getRowSkip());
     }
 };
-
+*/
 }
 
 #endif //SRC_RUNTIME_LOCAL_KERNELS_MATMUL_H
