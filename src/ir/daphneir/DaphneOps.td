@@ -1213,7 +1213,6 @@ def Daphne_CreateDistributedContextOp : Daphne_Op<"createDistributedContext", []
     let results = (outs);
 }
 
->>>>>>> b501c5993eb4551dc3e9ffefc381375b0f01875a
 def Daphne_CreateFPGAContextOp : Daphne_Op<"createFPGAContext", [FPGAOPENCLSupport]> {
     let arguments = (ins);
     let results = (outs);

@@ -76,15 +76,6 @@ using namespace aocl_utils;
 #define ACL_ALIGNMENT 64
 
 const char *sgemm_kernel_name[] = {
-void *acl_aligned_malloc(size_t size) {
-    void *result = NULL;
-    posix_memalign(&result, ACL_ALIGNMENT, size);
-    return result;
-}
-
-void cleanup() {}
-
-const char *kernel_name[] = {
     "kernel_A_loader",
     "kernel_B_loader",
     "kernel_unloader_WAIT_FINISH",
@@ -92,19 +83,6 @@ const char *kernel_name[] = {
     "kernel_B_feeder",
     "kernel_Out"
 };
-
-double compute_kernel_execution_time(cl_event &event, double &start_d, double &end_d) {
-    cl_ulong start, end;
-
-    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
-    clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
-
-    start_d = (double)1.0e-9 * start;
-    end_d = (double)1.0e-9 * end;
-    //return (double)(end-start);
-    return (double)1.0e-9 * (end - start); // nanoseconds to seconds
-}
-
 
 int sgemm(const float *A, const float *B, float *C, const int OUTERMOST_I, const int OUTERMOST_J, const int OUTERMOST_K, DCTX(ctx)) {
     const int TOTAL_I = III * II * OUTERMOST_I;
