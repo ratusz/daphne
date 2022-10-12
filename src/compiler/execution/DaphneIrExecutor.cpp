@@ -35,10 +35,9 @@
 #include <memory>
 #include <utility>
 
-DaphneIrExecutor::DaphneIrExecutor(bool distributed,
-                                   bool selectMatrixRepresentations,
+DaphneIrExecutor::DaphneIrExecutor(bool selectMatrixRepresentations,
                                    DaphneUserConfig cfg)
-    : distributed_(distributed), selectMatrixRepresentations_(selectMatrixRepresentations),
+    : selectMatrixRepresentations_(selectMatrixRepresentations),
     userConfig_(std::move(cfg)) {
     context_.getOrLoadDialect<mlir::daphne::DaphneDialect>();
     context_.getOrLoadDialect<mlir::StandardOpsDialect>();
@@ -103,7 +102,8 @@ bool DaphneIrExecutor::runPasses(mlir::ModuleOp module)
         if(userConfig_.explain_property_inference)
             pm.addPass(mlir::daphne::createPrintIRPass("IR after property inference"));
 
-        if (distributed_) {
+#if 0
+        if (userConfig_.use_distributed) {
             pm.addPass(mlir::daphne::createDistributeComputationsPass());
             //pm.addPass(mlir::daphne::createPrintIRPass("IR after distribution"));
             pm.addPass(mlir::createCSEPass());
@@ -113,14 +113,20 @@ bool DaphneIrExecutor::runPasses(mlir::ModuleOp module)
             pm.addNestedPass<mlir::FuncOp>(mlir::daphne::createWhileLoopInvariantCodeMotionPass());
             //pm.addPass(mlir::daphne::createPrintIRPass("IR after distribution - WhileLICM"));
         }
-
-        if(userConfig_.use_vectorized_exec) {
+#endif
+        
+        // For now, in order to use the distributed runtime we also require the vectorized engine to be enabled so
+        // as to create pipelines. Therefore *if* distributed runtime is enabled, we need to make a vectorization pass.
+        if(userConfig_.use_vectorized_exec || userConfig_.use_distributed) {
             // TODO: add inference here if we have rewrites that could apply to vectorized pipelines due to smaller sizes
             pm.addNestedPass<mlir::FuncOp>(mlir::daphne::createVectorizeComputationsPass());
             pm.addPass(mlir::createCanonicalizerPass());
         }
         if(userConfig_.explain_vectorized)
             pm.addPass(mlir::daphne::createPrintIRPass("IR after vectorization"));
+        
+        if (userConfig_.use_distributed)
+            pm.addPass(mlir::daphne::createDistributePipelinesPass());
 
         pm.addNestedPass<mlir::FuncOp>(mlir::daphne::createInsertDaphneContextPass(userConfig_));
 

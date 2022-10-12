@@ -1208,6 +1208,12 @@ def Daphne_CreateCUDAContextOp : Daphne_Op<"createCUDAContext", [CUDASupport]> {
     let results = (outs);
 }
 
+def Daphne_CreateDistributedContextOp : Daphne_Op<"createDistributedContext", []> {
+    let arguments = (ins);
+    let results = (outs);
+}
+
+>>>>>>> b501c5993eb4551dc3e9ffefc381375b0f01875a
 def Daphne_CreateFPGAContextOp : Daphne_Op<"createFPGAContext", [FPGAOPENCLSupport]> {
     let arguments = (ins);
     let results = (outs);
@@ -1234,6 +1240,21 @@ def Daphne_VectorizedPipelineOp : Daphne_Op<"vectorizedPipeline", [AttrSizedOper
     let regions = (region SizedRegion<1>:$body, AnyRegion:$cuda);
 
     let hasCanonicalizeMethod = 1;
+}
+
+def Daphne_DistributedPipelineOp : Daphne_Op<"distributedPipeline", [AttrSizedOperandSegments]> {
+    let summary = "...";
+
+    let arguments = (ins
+            StrScalar:$ir,
+            Variadic<AnyTypeOf<[AnyScalar, MatrixOrFrame]>>:$inputs,
+            // TODO: both types should be SIZE, but we require `-1` for dynamic/unknown
+            Variadic<AnyTypeOf<[SIntScalar, Size]>>:$out_rows,
+            Variadic<AnyTypeOf<[SIntScalar, Size]>>:$out_cols,
+            TypedArrayAttrBase<VectorSplitAttr, "Vector-Splits">:$splits,
+            TypedArrayAttrBase<VectorCombineAttr, "Vector-Combines">:$combines
+    );
+    let results = (outs Variadic<MatrixOrFrame>:$outputs);
 }
 
 // ****************************************************************************

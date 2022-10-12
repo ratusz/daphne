@@ -706,6 +706,17 @@ else
     daphne_msg "No need to build MLIR/LLVM again."
 fi
 
+if [[ $BUILD_FPGAOPENCL = *"ON"* ]]; then
+  FPGAOPENCL_BISTREAM_DIR="$projectRoot/src/runtime/local/kernels/FPGAOPENCL/bitstreams"
+  FPGAOPENCL_BISTREAM_URL="https://github.com/daphne-eu/supplemental-binaries/raw/main/fpga_bitstreams/"
+  if [ ! -d $FPGAOPENCL_BISTREAM_DIR ]; then
+    echo fetching FPGA bitstreams
+    mkdir -p $FPGAOPENCL_BISTREAM_DIR
+    cd $FPGAOPENCL_BISTREAM_DIR
+    wget $FPGAOPENCL_BISTREAM_URL/sgemm.aocx
+    cd -
+  fi
+fi
 
 # *****************************************************************************
 # Build DAPHNE target.

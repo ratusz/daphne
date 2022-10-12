@@ -56,6 +56,7 @@ struct DaphneContext {
     std::vector<std::unique_ptr<IContext>> cuda_contexts;
     std::vector<std::unique_ptr<IContext>> fpga_contexts;
 
+    std::unique_ptr<IContext> distributed_context;
 
     /**
      * @brief The user configuration (including information passed via CLI
@@ -102,6 +103,10 @@ struct DaphneContext {
 
     [[nodiscard]] bool useCUDA() const { return !cuda_contexts.empty(); }
     [[nodiscard]] bool useFPGA() const { return !fpga_contexts.empty(); }
+
+    [[nodiscard]] IContext *getDistributedContext() const {
+        return distributed_context.get();
+    }
     
     [[maybe_unused]] [[nodiscard]] DaphneUserConfig getUserConfig() const { return config; }
 };

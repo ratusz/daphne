@@ -50,13 +50,13 @@ or https://www.intel.com/content/www/us/en/software/programmable/sdk-for-opencl/
 To use a precompiled FPGA kernel a FPGA image is required (*.aocx). FPGA device has to programmed with particular image which contains required kernel implementation.
 Example FPGA programming command using example FPGA image:
 
- aocl program acl0 src/runtime/local/kernels/FPGAOPENCL/gemm.aocx   
+ aocl program acl0 src/runtime/local/kernels/FPGAOPENCL/bitstreams/sgemm.aocx   
 
 
 Additionally the BITSTREAM variable has to be defind in the system.
 Please look into the following example:
 
- export BITSTREAM=src/runtime/local/kernels/FPGAOPENCL/gemm.aocx 
+ export BITSTREAM=src/runtime/local/kernels/FPGAOPENCL/bitstreams/sgemm.aocx 
 
 When another FPGA image contains implementation for another required computational kernel then FPGA device has to be reprogrammed and BITSTREAM variable value has to be changed.
 
