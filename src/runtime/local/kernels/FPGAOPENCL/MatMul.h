@@ -63,10 +63,8 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
         const size_t nr1 = lhs->getNumRows();
         const size_t nc1 = lhs->getNumCols();
         const size_t nc2 = rhs->getNumCols();
-#ifndef NDEBUG
         const size_t nr2 = rhs->getNumRows();
         assert((nc1 == nr2) && "#cols of lhs and #rows of rhs must be the same");        
-#endif
 
 // Parameters of the systolic array in the bitstream. Do not change.
 
@@ -111,11 +109,12 @@ struct MatMul<DenseMatrix<float>, DenseMatrix<float>, DenseMatrix<float>> {
     long int num_elem_B; // = (long int)TOTAL_K*TOTAL_J;
     long int num_elem_C; // = (long int)TOTAL_I*TOTAL_J;
     
+#ifndef NDEBUG
     printf("\nA rows %ld\n",nr1);
     printf("\nA cols %ld\n",nc1);
     printf("\nX rows %ld\n",nr2);
     printf("\nX cols %ld\n",nc2);
- 
+#endif 
 
     
     if(nc2==1)//gemv kernel
