@@ -47,6 +47,9 @@ set(FPGAOPENCLKernels_SRC
 	${PREFIX}/sgemv_interface.h
 	${PREFIX}/kernel_utils.h
         ${PREFIX}/kernel_utils.cpp
+	${PREFIX}/Syrk.h
+	${PREFIX}/syrk_interface.cpp
+	${PREFIX}/syrk_interface.h
 ) 
 
 add_library(FPGAOPENCLKernels SHARED ${FPGAOPENCLKernels_SRC})

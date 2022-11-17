@@ -763,7 +763,7 @@ def Daphne_CTableOp : Daphne_Op<"ctable"> {
 
 def Daphne_SyrkOp : Daphne_Op<"syrk", [
     DeclareOpInterfaceMethods<VectorizableOpInterface>,
-    NumRowsFromArgNumCols, NumColsFromArg, CUDASupport
+    NumRowsFromArgNumCols, NumColsFromArg, CUDASupport, FPGAOPENCLSupport
 ]> {
     // TODO: support `A @ t(A)` operation
     let summary = [{Performs the operation `t(A) @ A`}];
